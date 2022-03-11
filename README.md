@@ -22,7 +22,7 @@
 ## Оглавление
 
 - О компании
-  - Философия
+  - [Философия](company/philosophy.md)
   - Офисы
 - [Начало работы](company/start-work.md)
   - Создание Аккаунтов
@@ -33,6 +33,6 @@
     - Настройка SSH ключа
     - Настройка IDE (PhpStorm)
   - [Coding Best Practice](dev/coding-best-practice.md)
-  - Frontend
-    - Верстка (БЭМ, SCSS)
-    - JavaScript (TypeScript, React)
+  - [Frontend](dev/frontend.md)
+    - [Верстка (БЭМ, SCSS)](dev/frontend-makeup.md)
+    - [JavaScript (TypeScript, React)](dev/frontend-javascript.md)
