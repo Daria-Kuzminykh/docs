@@ -16,14 +16,67 @@
 - MyComponent // Папка компонента
   - MyComponent.scss // Файл со стилями для этого компонента
   - MyComponent.tsx // Функциональный React компонент
-  - MyComponent.story.js // storybook для компонента (создается при необходимости)
-  - index.ts // файл, экспортирующий данный компонент - для того чтобы в других компонентах
+  - MyComponent.story.js // Storybook для компонента
+  - index.ts // Файл, экспортирующий данный компонент - для того чтобы в других компонентах
       при импорте MyComponent не нужно было писать путь включающий папку (.../MyComponent/MyComponent)
+```
+
+### Именование селекторов
+
+Все блоки именуются в CamelCase, а названия элементов, модификаторов и значений — маленькими буквами в kebab-case;
+
+### Хук `useBem()`**
+
+Во все проектах, где используется наш фреймворк Steroid (а это почти все проекты), мы используем хук `useBem()`,
+чтобы задавать именования классов html элементам. Эта небольшая утилита позволяет более строго задавать формат
+именований и упрощает прописывания модификаторов при наличии условий.
+
+Хук `useBem()` первым аргументом принимает имя БЭМ блока, который совпадает с названием React компонента. На выходе он
+возвращает функцию-объект `bem`, который имеет следующие методы:
+
+- `bem('a', 'b', false && 'c')` -> `a b` - При использовании как функции, может объединять названия классов
+- `bem.block()` -> `MyComponent` - Блок
+- `bem.element('title')` -> `MyComponent__title` - Элемент
+- `bem.element('title', {color: 'info'})` -> `MyComponent__title MyComponent__title_color_info` - Модификатор со строковым значением
+- `bem.element('title', {active: true})` -> `MyComponent__title MyComponent__title_active` - Модификатор с булевым значением
+- `bem.element('title', 'active')` -> `MyComponent__title MyComponent__title_active` - То же, что и предыдущий
+
+Более наглядно использование хука можно увидеть в следующем примере:
+
+```tsx
+export default function MyComponent(props) {
+    const bem = useBem('MyComponent'); // Вызов утилиты с объявление имени блока
+
+    return (
+        <div className={bem.block()}> {/* MyComponent */}
+            <h1 className={bem.element('title')}> {/* MyComponent__title */}
+                {props.title}
+            </h1>
+            <div className={bem.element('card', {active: props.isActive})}> {/* MyComponent__card MyComponent__card_active */}
+                <div className={bem( // Объединение нескольких селекторов с проверкой на их существование
+                    bem.element('card-description'), // MyComponent__card-description
+                    props.isError && 'text-error', // Глобальный класс 'text-error' из фреймворка bootstrap
+                    props.descriptionClassName, // Кастомный класс из родительского компонента
+                )}>
+                    {props.description}
+                </div>
+                <p className={bem.element('card-hint', {color: 'info'})}> {/* MyComponent__card-hint MyComponent__card-hint_color_info */}
+                    ...
+                </p>
+                <img
+                    className={bem.element('image', 'thumbnail')} // MyComponent__image MyComponent__image_thumbnail
+                    src={props.url}
+                    alt={props.title}
+                />
+            </div>
+        </div>
+    );
+}
 ```
 
 ### Виды компонентов
 
-В проекте мы используем такие виды компонентов:
+В проекте мы используем такие виды React компонентов:
 
 1. Страница - компонент, который представляет собой отдельную страницу сайта (например главная страница, страница
    контактов и др.)
@@ -43,49 +96,6 @@
 
    Такие компоненты располагаются в `src/shared`, например `src/shared/SideMenu`
 
-### Именование селекторов
-
-Все блоки именуются в CamelCase, а названия элементов, модификаторов и значений — маленькими буквами в kebab-case;
-
-### Хук `useBem()`**
-
-TODO...
-- bem.block()
-- bem.element()
-- модификаторы
-
-```tsx
-export default function MyComponent(props) {
-    const bem = useBem('MyComponent'); // Вызов утилиты с объявление имени блока
-
-    return (
-        <div className={bem.block()}> {/* MyComponent */}
-            <h1 className={bem.element('title')}> {/* MyComponent__title */}
-                {props.title}
-            </h1>
-            <div className={bem.element('card', {active: props.isActive})}> {/* MyComponent__card_active */}
-                <div className={bem( // Объединение нескольких селекторов с проверкой на их существование
-                    bem.element('card-description'), // MyComponent__card-description
-                    props.isError && 'text-error', // Глобальный класс 'text-error' из фреймворка bootstrap
-                    props.descriptionClassName, // Кастомный класс из родительского компонента
-                )}>
-                    {props.description}
-                </div>
-                <p className={bem.element('card-hint', {color: 'info'})}> // MyComponent__card-hint_color_info
-                    ...
-                </p>
-                <img
-                    className={bem.element('image', 'thumbnail')} // MyComponent__image_thumbnail
-                    src={props.url}
-                    alt={props.title}
-                />
-            </div>
-        </div>
-    );
-}
-
-```
-
 ### Storybook
 
 Для каждого компонента должен быть создан storybook-файл `*.story.js`
@@ -96,6 +106,35 @@ export default function MyComponent(props) {
 Например, если компонент - кнопка, то нужно в storybook-файле показать кнопку обычную, в нажатом виде, с наведением
 курсора, и пр.
 
+### Pixel Perfect
+
+По-умолчанию, у нас предполагается верстка в режиме "пиксель перфект", когда все отступы, шрифты, цвета и прочее
+полностью совпадают с дизайном. Однако стоит учитывать, что дизайнер тоже человек и может ошибаться.
+
+Поэтому, если вы видите какую-либо неточность или не логичность в отступах, лишних дополнительный цвет или
+несовпадение с сеткой, то лучше обратиться к проект-менеджеру или напрямую к дизайнеру, чтобы обсудить этот момент.
+
+Не нужно в одностороннем порядке видоизменять дизайн или наоборот — добавлять "костыли" в код верстки. Для нас всегда
+в приоритете, чтобы интерфейс был повторяющимся, а кода — меньше.
+
+### Grid, Flex
+
+Использование современных способов расположения элементов через "гриды" и "флексы" — считается необходимым, поскольку
+их уже поддерживают современные браузеры. Под старые браузеры, например Internet Explorer мы адаптацию не делаем.
+
+### Браузеры
+
+Современными браузерами (последних версий), в которых должны хорошо работать наши приложения следующие:
+
+- Chrome
+- Safari
+- Mozilla
+- Opera
+- Edge
+- Яндекс.Браузер
+
+
+
 ..
 
 TODO...
@@ -103,14 +142,11 @@ TODO...
 - фиксированные размеры — в пикселях, резиновые размеры — в процентах
 - не пишите размеры в пикселях в явном виде, опирайтесь на переменные Bootstrap/Steroids или заводите свои (но всегда
   старайтесь отталкиваться от существующих)
-- старайтесь верстать в pixel perfect, но учитывайте, что дизайнер тоже может ошибаться. Считается нормальным общаться с
-  дизайнером и попросить подвинуть или видоизменить элементы, если те не вписываются в общую картину или сетку.
+
 - вся верстка должна быть адаптивной и резиновой между переходными размерами экрана
 - ориентируемся на следующий диапазон ширины экранов: от 320px до 3000px (4к). Верстка как минимум не должна
   съезжать/ломаться
 - стили подключаем через index.scss
-- использовать гриды и флекс — можно и нужно
-- поддерживаемые браузеры: Chrome, Safari, Mozilla, Opera, Edge, Яндекс.Браузер
 - нельзя определять глобальные стили (исключения составляю стили, поставляемые библиотекой Bootstrap, но расширять их
   нельзя).
 - при подключении библиотеки, где есть стили - эти стили должны подключаться только к рамках блока
