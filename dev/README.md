@@ -32,3 +32,5 @@
 - Frontend
     - [Верстка (БЭМ, SCSS)](frontend-makeup.md)
     - [JavaScript (TypeScript, React)](frontend-javascript.md)
+- Other
+  - [Автозапуск eslint и вебхук в mattermost](other-auto-eslint.md)
