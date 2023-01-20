@@ -35,3 +35,38 @@ TODO
 - прописывайте deps для useEffect(), useCallback(), useMemo() и так далее. Настройте, чтобы IDE автоматически проставляла
 - эти зависимости (см. раздел “Настройка IDE”, “save --fix”)
 - при проверке длины массива — ожидайте, что вместо массива может быть null, ставьте знак вопроса перед точкой — if (items?.length > 0) { … } не забывайте для списков прописывать key
+- Пропсы передаем через объект props, деструктуризацию при необходимости делаем уже внутри компонента
+
+```tsx
+interface IProps {
+    id: number,
+    name: string,
+}
+
+export default function Component(props: IProps) {
+    return (
+        <div>
+            /* основной вариант использования пропсов */
+            {props.id + '/' + props.name}
+        </div>
+    )
+}
+```
+
+```tsx
+interface IProps {
+    id: number,
+    name: string,
+}
+
+export default function Component(props: IProps) {
+    const {id, name} = props;
+
+    return (
+        <div>
+            /* использование пропсов через деструктуризацию (при необходимости) */
+            {id + '/' + name}
+        </div>
+    )
+}
+```
